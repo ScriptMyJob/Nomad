@@ -26,3 +26,34 @@
   when: ( installed_version.stdout != version ) or
         ( installed_version.rc     != 0 )
   become: true
+
+- name: Create Nomad directory structure
+  file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    state: directory
+    mode: 755
+  loop:
+    - /etc/nomad
+    - /var/lib/nomad
+  become: true
+
+- name: Configure Nomad config
+  template:
+    src: ../templates/nomad-client.hcl.j2
+    dest: /etc/nomad/nomad-client.hcl
+  become: true
+
+- name: Configure Nomad service
+  template:
+    src: ../templates/nomad-client.service.j2
+    dest: /etc/systemd/system/nomad-client.service
+  become: true
+
+- name: Start Nomad service
+  service:
+    name: nomad-client
+    state: started
+    enabled: yes
+  become: true
